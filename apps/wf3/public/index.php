@@ -1,6 +1,7 @@
 <?php
 
 use App\DevTools;
+use App\Models\LetterCounter;
 use App\Models\Students;
 
 $loader = require '../vendor/autoload.php';
@@ -52,9 +53,9 @@ $students = [
  * sinon ajouter cet élève a la section
  * chaque élève doit êre un objet
  * chaque section est un objet qui contient un tabeau d'objets élèves
+count letters
 */
 $allStudents = [];
-
 foreach ($students as $student){
     $classStudents = new Students();
     $classStudents->name = $student['name'];
@@ -62,4 +63,8 @@ foreach ($students as $student){
     $classStudents->section = $student['section'];
     $allStudents[$classStudents->section][] =$student;
 }
-$tools->prettyVarDump($allStudents);
+
+foreach ($students as $student){
+    $classCounterL =  new LetterCounter($student['name']);
+    echo $student['name'].' = '.$classCounterL->result.' <br>';
+}
