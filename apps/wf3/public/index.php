@@ -1,70 +1,101 @@
 <?php
 
 use App\DevTools;
-use App\Models\LetterCounter;
-use App\Models\Students;
+use App\LibsLoader;
+use App\Models\Player;
+use App\Models\Stats;
 
 $loader = require '../vendor/autoload.php';
+
+$libsLoader = new LibsLoader();
+$libsLoader->loadLibraries();
 $tools = new DevTools();
-
-$students = [
-
-    [
-        "name" => "Hadrien",
-        "age" => 31,
-        "section" => "CE1"
-    ],
-    [
-        "name" => "Julien",
-        "age" => 33,
-        "section" => "CE1"
-    ],
-    [
-        "name" => "Theo",
-        "age" => 20,
-        "section" => "CP"
-    ],
-    [
-        "name" => "Samantha",
-        "age" => 30,
-        "section" => "CE2"
-    ],
-    [
-        "name" => "Emilie",
-        "age" => 24,
-        "section" => "CE2"
-    ],
-    [
-        "name" => "Vladimir",
-        "age" => 64,
-        "section" => "CM2"
-    ],
-    [
-        "name" => "Phillipe",
-        "age" => 47,
-        "section" => "CM2"
-    ]
-
-];
 
 
 /*
- * Faire un algo qui va créer un école en fonction des élèves du tableau : Si un élève est dans une section et que cette section n'existe pas encore, la créer,
- * sinon ajouter cet élève a la section
- * chaque élève doit êre un objet
- * chaque section est un objet qui contient un tabeau d'objets élèves
-count letters
-*/
-$allStudents = [];
-foreach ($students as $student){
-    $classStudents = new Students();
-    $classStudents->name = $student['name'];
-    $classStudents->age = $student['age'];
-    $classStudents->section = $student['section'];
-    $allStudents[$classStudents->section][] =$student;
+ * classe de personnage
+ *
+ * Choisi par le joueur
+ * name, classe, race, alignement
+ * stats : force, endurance, agilité, intelligence, charisme, chance
+ *
+ * Calculé en fonction des choix du joueur
+ * PV : chiffre random entre 10 et 20 + 1,2 x endurance
+ * mana : chiffre random entre 10 et 30 + 1,3 x intelligence
+ * points d'armure : Classe d'Armure de l'armure portée + endure x 1,1
+ * calcul des dégats : force * 0,5 + rand(0 et 3)
+ */
+/* Player 1 */
+$player = new Player();
+$player->name = 'Player 1';
+$player->classe = 'Fire';
+$player->race = 'Warriors';
+$player->alignement = 'good';
+$player->armor = 3.7;
+$p1stats = new Stats();
+$p1stats->force = 3.4;
+$p1stats->endurance = 2;
+$p1stats->agilite = 3;
+$p1stats->intelligence = 4;
+$p1stats->charisme = 7;
+$p1stats->chance = 8;
+$player->stats = $p1stats;
+$player->hp();
+$player->mana();
+$player->armor();
+$player->damage();
+/* Player 1 */
+
+/* Player 2 */
+$player2 = new Player();
+$player2->name = 'Player 2';
+$player2->classe = 'Fire';
+$player2->race = 'Warriors';
+$player2->alignement = 'good';
+$player2->armor = 3.3;
+$p2stats = new Stats();
+$p2stats->force = 3.6;
+$p2stats->endurance = 4;
+$p2stats->agilite = 4;
+$p2stats->intelligence = 5;
+$p2stats->charisme = 4;
+$p2stats->chance = 6;
+$player2->stats = $p2stats;
+$player2->hp();
+$player2->mana();
+$player2->armor();
+$player2->damage();
+/* Player 2 */
+
+$tools->prettyVarDump($player);
+$tools->prettyVarDump($player2);
+// faire un algo simuler un combat entre le joueur et l'orc dés qu'un des joueur a 0 pvp, il a perdu.
+$registerHits =[];
+
+echo '<br>HP before fight: Player 1 = '.$player->hp.' || Player 2 = '.$player2->hp;
+
+for($i=0; $player->hp > 0 && $player2->hp > 0; $i++){
+    $player->blood($player2->damage);
+    $registerHits['player1'][] = $player->damage;
+    $registerHits['player1Damage'] += $player->damage;
+    $player2->blood($player->damage);
+    $registerHits['player2'][] = $player2->damage;
+    $registerHits['player2Damage'] += $player2->damage;
 }
 
-foreach ($students as $student){
-    $classCounterL =  new LetterCounter($student['name']);
-    echo $student['name'].' = '.$classCounterL->result.' <br>';
+if($player->hp < 0){$player->hp = 0;};
+if($player2->hp < 0){ $player2->hp = 0;};
+
+echo '<br>HP after .. fight: Player 1 = '.$player->hp.' || Player 2 = '.$player2->hp;
+
+if($player2->hp == 0 && $player->hp == 0){
+    echo '<br><br>Player 1 and Player 2 are = after '.$i.' hits. P1 damage:'.$registerHits['player1Damage'].' P2 damage:'
+        .$registerHits['player1Damage'].' <br><br>';
+}else if($player2->hp > 0 ){
+    echo '<br><br>Player 2 is a WINNER after '.$i.' hits with damage: '.$registerHits['player2Damage'].'<br><br>';
+}else{
+    echo '<br><br>Player 1 is a WINNER after '.$i.' hits with damage: '.$registerHits['player1Damage'].'<br><br>';
 }
+
+$tools->prettyVarDump($registerHits);
+
